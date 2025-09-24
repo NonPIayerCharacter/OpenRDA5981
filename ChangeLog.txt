@@ -1,0 +1,3 @@
+SDK2.0与SDK1.3.7，功能相同。(646/143)
+1、多加了daemon_thread控制流程。
+2、默认connect是阻塞的，若使用非阻塞，在rda59xx_daemon.c中打开宏NO_BLOCK。
