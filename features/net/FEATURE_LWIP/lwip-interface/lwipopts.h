@@ -124,7 +124,7 @@
 #ifdef MBED_CONF_LWIP_TCP_SOCKET_MAX
 #define MEMP_NUM_TCP_PCB            MBED_CONF_LWIP_TCP_SOCKET_MAX
 #else
-#define MEMP_NUM_TCP_PCB            4
+#define MEMP_NUM_TCP_PCB            6
 #endif
 
 // One udp_pcb is needed for each UDPSocket.
@@ -132,7 +132,7 @@
 #ifdef MBED_CONF_LWIP_UDP_SOCKET_MAX
 #define MEMP_NUM_UDP_PCB            MBED_CONF_LWIP_UDP_SOCKET_MAX
 #else
-#define MEMP_NUM_UDP_PCB            4
+#define MEMP_NUM_UDP_PCB            2
 #endif
 
 // Number of non-pool pbufs.
@@ -151,7 +151,7 @@
 #ifdef MBED_CONF_LWIP_SOCKET_MAX
 #define MEMP_NUM_NETCONN            MBED_CONF_LWIP_SOCKET_MAX
 #else
-#define MEMP_NUM_NETCONN            4
+#define MEMP_NUM_NETCONN            8
 #endif
 
 #define TCP_QUEUE_OOSEQ             1

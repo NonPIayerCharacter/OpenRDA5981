@@ -228,7 +228,7 @@ r_s32 rda59xx_sta_disconnect()
     msg.type = DAEMON_STA_DISCONNECT;
     msg.arg1 = DISCONNECT_ACTIVE;
     rda59xx_send_daemon_msg(&msg, RDA_WAIT_FOREVER); 
-    //wifi_event_cb(EVENT_STA_DISCONNECTTED, NULL);
+    if(wifi_event_cb) wifi_event_cb(EVENT_STA_DISCONNECTTED, NULL);
     wifi_state = EVENT_STA_DISCONNECTTED;
     return 0;
 }
@@ -332,15 +332,15 @@ reconn:
             r_memcpy(&r_bss_info.dns2, dns_getserver(1), sizeof(r_u32));
             wifi_state = EVENT_STA_GOT_IP;
             WIFISTACK_PRINT("Sta got ip successful!\r\n");
-            //wifi_event_cb(EVENT_STA_CONNECTTED, NULL);
-            //wifi_event_cb(EVENT_STA_GOT_IP, NULL);
+            if(wifi_event_cb) wifi_event_cb(EVENT_STA_CONNECTTED, NULL);
+            if(wifi_event_cb) wifi_event_cb(EVENT_STA_GOT_IP, NULL);
             break;
         }else{
             rda59xx_sta_disconnect_internal();
             if(++reconn > RECONN_TIMES){
                 WIFISTACK_PRINT("reconn times=%d\r\n",reconn);
                 //r_memset(&r_sta_info, 0, sizeof(rda59xx_sta_info));
-                //wifi_event_cb(EVENT_STA_CONNECT_FAIL, NULL);
+                if(wifi_event_cb) wifi_event_cb(EVENT_STA_CONNECT_FAIL, NULL);
                 wifi_state = EVENT_STA_CONNECT_FAIL;
                 break;
             }else{
