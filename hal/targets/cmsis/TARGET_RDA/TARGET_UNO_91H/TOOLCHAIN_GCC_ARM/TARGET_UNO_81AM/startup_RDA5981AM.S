@@ -20,12 +20,12 @@
 
 /* Memory Model
    The HEAP starts at the end of the DATA section and grows upward.
-   
+
    The STACK starts at the end of the RAM and grows downward.
-   
+
    The HEAP and stack STACK are only checked at compile time:
    (DATA_SIZE + HEAP_SIZE + STACK_SIZE) < RAM_SIZE
-   
+
    This is just a check for the bare minimum for the Heap+Stack area before
    aborting compilation, it is not the run time limit:
    Heap_Size + Stack_Size = 0x80 + 0x80 = 0x100
@@ -50,7 +50,7 @@ __StackTop:
 #ifdef __HEAP_SIZE
     .equ    Heap_Size, __HEAP_SIZE
 #else
-    .equ    Heap_Size, 0x18000
+    .equ    Heap_Size, 0x28000
 #endif
     .globl    __HeapBase
     .globl    __HeapLimit
@@ -59,7 +59,7 @@ __HeapBase:
     .size __HeapBase, . - __HeapBase
 __HeapLimit:
     .size __HeapLimit, . - __HeapLimit
-    
+
     .section .isr_vector
     .align 2
     .globl __isr_vector
@@ -109,7 +109,7 @@ __isr_vector:
     .type    Reset_Handler, %function
 Reset_Handler:
 /*     Loop to copy data from read only memory to RAM. The ranges
- *      of copy from/to are specified by following symbols evaluated in 
+ *      of copy from/to are specified by following symbols evaluated in
  *      linker script.
  *      _etext: End of code section, i.e., begin of data sections to copy from.
  *      __data_start__/__data_end__: RAM address range that data should be
@@ -117,11 +117,6 @@ Reset_Handler:
 
     ldr    r0, =__StackTop
     msr    msp, r0
-
-    ldr    r0, =rda_ccfg_boot
-    blx    r0
-    cmp    r0, #0x01
-    bne    Soft_Reset
 
     ldr    r1, =__etext
     ldr    r2, =__data_start__
@@ -134,16 +129,17 @@ Reset_Handler:
     strlt   r0, [r2], #4
     blt    .Lflash_to_ram_loop
 
-    ldr    r1, =__etext1
-    ldr    r2, =__text1_start__
-    ldr    r3, =__text1_end__
+	 ldr	r2, =__bss_start__
+	 b	.LoopFillZerobss
 
-.Lflash_to_ram_loop_1:
-    cmp     r2, r3
-    ittt    lt
-    ldrlt   r0, [r1], #4
-    strlt   r0, [r2], #4
-    blt    .Lflash_to_ram_loop_1
+.FillZerobss:
+    movs    r3, #0
+    str r3, [r2], #4
+
+.LoopFillZerobss:
+    ldr r3, = __bss_end__
+    cmp r2, r3
+    bcc .FillZerobss
 
     ldr    r0, =SystemInit
     blx    r0
@@ -187,7 +183,7 @@ Soft_Reset:
     .weak     \handler_name
     .set      \handler_name, Default_Handler
     .endm
- 
+
     def_irq_default_handler     SPIFLASH_IRQHandler
     def_irq_default_handler     PTA_IRQHandler
     def_irq_default_handler     SDIO_IRQHandler
@@ -205,4 +201,3 @@ Soft_Reset:
     def_irq_default_handler     I2C_IRQHandler
 
     .end
-
