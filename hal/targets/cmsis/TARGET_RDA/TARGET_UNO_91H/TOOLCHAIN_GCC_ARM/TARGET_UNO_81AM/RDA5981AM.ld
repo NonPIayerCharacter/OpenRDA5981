@@ -5,7 +5,7 @@ MEMORY
 {
     /* If ICache is enable, use virtual flash base address */
     /* Use partition index: 0 */
-    FLASH (rx)      : ORIGIN = 0x18001000, LENGTH = 500K
+    FLASH (rx)      : ORIGIN = 0x18004000, LENGTH = 580K
     /* Use partition index: 1 */
     /* FLASH (rx)      : ORIGIN = 0x1807E000, LENGTH = 500K */
 
@@ -25,9 +25,9 @@ MEMORY
 /* Linker script to place sections and symbol values. Should be used together
  * with other linker script that defines memory regions FLASH and RAM.
  * It references following symbols, which must be defined in code:
- *   Reset_Handler : Entry of reset handler
- * 
- * It defines following symbols, which code can use without definition:
+ *  Reset_Handler : Entry of reset handler
+ *
+ * Following symbols can be used in code without definition:
  *   __exidx_start
  *   __exidx_end
  *   __etext
@@ -48,6 +48,7 @@ MEMORY
  *   __StackTop
  *   __stack
  */
+
 ENTRY(Reset_Handler)
 
 SECTIONS
@@ -55,7 +56,7 @@ SECTIONS
     .text :
     {
         KEEP(*(.isr_vector))
-        *(EXCLUDE_FILE (*wland_flash_wp.o) .text*)
+        *(.text*)
 
         KEEP(*(.init))
         KEEP(*(.fini))
@@ -79,7 +80,7 @@ SECTIONS
         KEEP(*(.eh_frame*))
     } > FLASH
 
-    .ARM.extab : 
+    .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
     } > FLASH
@@ -92,7 +93,7 @@ SECTIONS
     __exidx_end = .;
 
     __etext = .;
-        
+
     .data : AT (__etext)
     {
         __data_start__ = .;
@@ -113,7 +114,6 @@ SECTIONS
         KEEP(*(.init_array))
         PROVIDE (__init_array_end = .);
 
-
         . = ALIGN(4);
         /* finit data */
         PROVIDE (__fini_array_start = .);
@@ -124,18 +124,9 @@ SECTIONS
         . = ALIGN(4);
         /* All data end */
         __data_end__ = .;
-
     } > IRAM
 
-    __etextend = __etext + SIZEOF(.data);
-    __etext1 = __etextend;
-    .text1 : AT (__etext1)
-    {
-        __text1_start__ = .;
-        *wland_flash_wp.o(.text*)
-        __text1_end__ = .;
-    } > IRAM
-    
+
     .bss :
     {
         __bss_start__ = .;
@@ -144,7 +135,7 @@ SECTIONS
         __bss_end__ = .;
         Image$$RW_IRAM1$$ZI$$Limit = . ;
     } > IRAM
-    
+
     /* .stack_dummy section doesn't contains any symbols. It is only
      * used for linker to calculate size of stack sections, and assign
      * values to stack symbols later */
@@ -162,7 +153,6 @@ SECTIONS
     /* Check if data + stack exceeds RAM limit */
     ASSERT(__StackLimit >= __bss_end__, "region IRAM overflowed with stack")
 
-
     .heap :
     {
         __end__ = .;
@@ -170,12 +160,17 @@ SECTIONS
         *(.heap*)
         __HeapLimit = .;
     } > DRAM
+
     PROVIDE(__sbrk_start = ADDR(.heap));
     PROVIDE(__krbs_start = ADDR(.heap) + SIZEOF(.heap));
+    PROVIDE(heap_start = __sbrk_start);
+    PROVIDE(heap_end      = __HeapLimit);
+    PROVIDE(heap_len      = heap_end -  heap_start);
 
-    /* Code can explicitly ask for data to be 
+    .ARM.attributes 0 : { *(.ARM.attributes) }
+    /* Code can explicitly ask for data to be
        placed in these higher RAM banks where
-       they will be left uninitialized. 
+       they will be left uninitialized.
     */
     .SECTIONRESERVED1 (NOLOAD):
     {
