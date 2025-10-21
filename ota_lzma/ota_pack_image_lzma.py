@@ -20,7 +20,7 @@ struct image_header
 };
 """
 
-def pack_image(input_file, lzma_file, ota_file, version):
+def pack_image(input_file, lzma_file, ota_file):
     print('input_file:', input_file)
     print('lzma_file:', lzma_file)
     with open(input_file, 'rb') as f:
@@ -37,6 +37,7 @@ def pack_image(input_file, lzma_file, ota_file, version):
     crc32_lzma ^= 0xFFFFFFFF
     crc32 = zlib.crc32(data, 0) & 0xFFFFFFFF
     crc32 ^= 0xFFFFFFFF
+    version = str(crc32)
 
     size = len(data_lzma)
     print('   size:', size)
@@ -51,7 +52,7 @@ def pack_image(input_file, lzma_file, ota_file, version):
 
 if __name__ == "__main__":
     if len(sys.argv) < 5:
-        print(sys.argv[0], "input_file", "lzma_file", "ota_file", "version")
+        print(sys.argv[0], "input_file", "lzma_file", "ota_file")
         exit(0)
 
-    pack_image(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    pack_image(sys.argv[1], sys.argv[2], sys.argv[3])
